@@ -7,14 +7,12 @@ namespace ControlzEx
     using System.Windows.Interop;
     using System.Windows.Media;
     using ControlzEx.Behaviors;
-    using ControlzEx.Helpers;
     using ControlzEx.Internal;
     using ControlzEx.Internal.KnownBoxes;
     using ControlzEx.Native;
     using ControlzEx.Theming;
     using JetBrains.Annotations;
     using Microsoft.Xaml.Behaviors;
-    using Windows.Win32;
     using Windows.Win32.Foundation;
     using Windows.Win32.Graphics.Dwm;
     using COLORREF = Windows.Win32.COLORREF;
@@ -28,6 +26,9 @@ namespace ControlzEx
         static WindowChromeWindow()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(WindowChromeWindow), new FrameworkPropertyMetadata(typeof(WindowChromeWindow)));
+
+            RenderOptions.ClearTypeHintProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata { DefaultValue = ClearTypeHint.Enabled });
+            TextOptions.TextFormattingModeProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata { DefaultValue = TextFormattingMode.Display });
         }
 
         public WindowChromeWindow()
@@ -41,12 +42,6 @@ namespace ControlzEx
             base.OnSourceInitialized(e);
 
             this.windowHandle = new HWND(new WindowInteropHelper(this).Handle);
-            this.hwndSource = HwndSource.FromHwnd(this.windowHandle);
-
-            if (this.hwndSource?.CompositionTarget is { } compositionTarget)
-            {
-                compositionTarget.BackgroundColor = Colors.Transparent;
-            }
 
             this.UpdateCaptionColor();
 

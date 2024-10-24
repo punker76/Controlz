@@ -3,7 +3,7 @@ namespace ControlzEx.Theming
     using System;
     using System.Windows;
     using System.Windows.Interop;
-    using ControlzEx.Helpers;
+    using System.Windows.Media;
     using ControlzEx.Internal;
 
     public class WindowBackdropManager : DependencyObject
@@ -58,25 +58,34 @@ namespace ControlzEx.Theming
                 return true;
             }
 
-            if (target is { AllowsTransparency: true })
-            {
-                SetCurrentBackdropType(target, WindowBackdropType.None);
-                return false;
-            }
-
-            if (FeatureSupport.IsWindowBackdropSupported is false)
-            {
-                SetCurrentBackdropType(target, WindowBackdropType.None);
-                return false;
-            }
-
             if (PresentationSource.FromVisual(target) is HwndSource hwndSource)
             {
+                if (hwndSource.CompositionTarget is { } compositionTarget)
+                {
+                    compositionTarget.BackgroundColor = windowBackdropType != WindowBackdropType.None
+                        ? Colors.Transparent
+                        : Color.FromRgb(0, 0, 0); // same value as in HwndTarget
+                }
+
+                if (target is { AllowsTransparency: true })
+                {
+                    SetCurrentBackdropType(target, WindowBackdropType.None);
+                    return false;
+                }
+
+                if (FeatureSupport.IsWindowBackdropSupported is false)
+                {
+                    SetCurrentBackdropType(target, WindowBackdropType.None);
+                    return false;
+                }
+
                 var handle = hwndSource.Handle;
 
                 var result = UpdateBackdrop(handle, windowBackdropType);
 
-                SetCurrentBackdropType(target, result ? windowBackdropType : WindowBackdropType.None);
+                SetCurrentBackdropType(target, result
+                                           ? windowBackdropType
+                                           : WindowBackdropType.None);
 
                 return result;
             }
